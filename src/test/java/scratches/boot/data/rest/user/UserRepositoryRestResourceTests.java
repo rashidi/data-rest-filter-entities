@@ -23,7 +23,7 @@ import static scratches.boot.data.rest.user.UserStatus.ACTIVE;
 @RunWith(SpringRunner.class)
 @Transactional
 @SpringBootTest
-@AutoConfigureMockMvc(printOnlyOnFailure = false)
+@AutoConfigureMockMvc
 @AutoConfigureTestEntityManager
 public class UserRepositoryRestResourceTests {
 
