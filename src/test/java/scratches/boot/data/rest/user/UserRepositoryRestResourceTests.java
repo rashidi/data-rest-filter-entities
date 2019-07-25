@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static scratches.boot.data.rest.user.UserStatus.ACTIVE;
+import static scratches.boot.data.rest.user.UserStatus.DELETED;
 
 /**
  * @author Rashidi Zin
@@ -45,5 +46,20 @@ public class UserRepositoryRestResourceTests {
                 .andExpect(jsonPath("name", is(name)))
                 .andExpect(jsonPath("username", is(username)))
                 .andExpect(jsonPath("status", is(ACTIVE.name())));
+    }
+
+    @Test
+    public void getDeletedUser() throws Exception {
+        String name = "Rashidi Zin", username = "rashidi";
+
+        User user = new User(name, username);
+
+        user.setStatus(DELETED);
+
+        Long id = em.persistAndGetId(user, Long.class);
+
+        mvc
+                .perform(get("/users/{id}", id))
+                .andExpect(status().isNotFound());
     }
 }
