@@ -11,6 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -62,4 +63,43 @@ public class UserRepositoryRestResourceTests {
                 .perform(get("/users/{id}", id))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    public void getAll() throws Exception {
+        var activeUser = new User("Active User", "active.user");
+
+        em.persist(activeUser);
+
+        var deletedUser = new User("Deleted User", "deleted.user");
+
+        deletedUser.setStatus(DELETED);
+
+        em.persist(deletedUser);
+
+        mvc
+                .perform(get("/users"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("page.totalElements", is(1)))
+                .andExpect(jsonPath("_embedded.users[0].username", is("active.user")));
+    }
+
+    @Test
+    public void getAllWithPagination() throws Exception {
+        em.persist(new User("Active User", "active.user"));
+        em.persist(new User("Another Active User", "another.active.user"));
+
+        var deletedUser = new User("Deleted User", "deleted.user");
+
+        deletedUser.setStatus(DELETED);
+
+        em.persist(deletedUser);
+
+        mvc
+                .perform(get("/users").param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("page.totalElements", is(2)))
+                .andExpect(jsonPath("_embedded.users", hasSize(1)))
+                .andExpect(jsonPath("_embedded.users[0].username", is("active.user")));
+    }
+
 }
